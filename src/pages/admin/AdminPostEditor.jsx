@@ -76,7 +76,7 @@ export default function AdminPostEditor() {
 
   const [form, setForm] = useState({
     title: '', slug: '', excerpt: '', content: '', category: presetType,
-    tags: '', featured: false, vendorProvided: false,
+    tags: '', featured: false, vendorProvided: false, buildCategory: 'permanent',
     rating: 0, productName: '', productBrand: '', productPrice: '', productLink: '',
     pros: '', cons: '',
   });
@@ -99,6 +99,7 @@ export default function AdminPostEditor() {
           tags: (existing.tags || []).join(', '),
           featured: existing.featured || false,
           vendorProvided: existing.vendorProvided || false,
+          buildCategory: existing.buildCategory || 'permanent',
           rating: existing.rating || 0,
           productName: existing.product?.name || '',
           productBrand: existing.product?.brand || '',
@@ -136,6 +137,7 @@ export default function AdminPostEditor() {
       tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
       featured: form.featured,
       vendorProvided: form.vendorProvided,
+      buildCategory: form.category === 'upgrade' ? form.buildCategory : undefined,
       author: user.username,
       authorId: user.id,
       ...(isReview ? {
@@ -284,6 +286,34 @@ export default function AdminPostEditor() {
               ))}
             </div>
           </Section>
+
+          {/* Build category — only for upgrades */}
+          {form.category === 'upgrade' && (
+            <Section title="Build Category" color="var(--color-buzz-teal)">
+              {[
+                { value: 'permanent', label: 'Permanent Install', sub: 'Bolted in, wired up, staying put' },
+                { value: 'camping-kit', label: 'Camping Kit', sub: 'Easy on / easy off for trips' },
+              ].map(({ value, label, sub }) => (
+                <label key={value} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '0.625rem', cursor: 'pointer',
+                  padding: '0.6rem 0.875rem',
+                  border: `2px solid ${form.buildCategory === value ? 'var(--color-buzz-teal)' : '#C9BEA0'}`,
+                  background: form.buildCategory === value ? 'rgba(14,116,144,0.08)' : 'transparent',
+                  transition: 'all 0.12s',
+                }}>
+                  <input type="radio" name="buildCategory" value={value}
+                    checked={form.buildCategory === value}
+                    onChange={(e) => setForm((f) => ({...f, buildCategory: e.target.value}))}
+                    style={{accentColor: 'var(--color-buzz-teal)', marginTop: 3}}
+                  />
+                  <div>
+                    <span style={{fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.04em', color: 'var(--color-buzz-navy)', display: 'block'}}>{label.toUpperCase()}</span>
+                    <span style={{fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: '#7A6E5A'}}>{sub}</span>
+                  </div>
+                </label>
+              ))}
+            </Section>
+          )}
 
           {/* Options */}
           <Section title="Options">

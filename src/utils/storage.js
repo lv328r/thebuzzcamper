@@ -21,6 +21,7 @@ function mapArticle(row) {
     product: row.product || null,
     pros: row.pros || [],
     cons: row.cons || [],
+    buildCategory: row.build_category || 'permanent',
     comments: [],
   };
 }
@@ -55,6 +56,7 @@ function articleToRow(article) {
     updated_at: new Date().toISOString(),
   };
   if (article.id) row.id = article.id;
+  if (article.buildCategory) row.build_category = article.buildCategory;
   return row;
 }
 
