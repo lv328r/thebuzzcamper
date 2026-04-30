@@ -77,6 +77,12 @@ export default function Login() {
             </button>
           </form>
 
+          <div style={{textAlign: 'center', marginTop: '1rem'}}>
+            <Link to="/forgot-password" style={{fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--color-buzz-teal)', textDecoration: 'none', fontWeight: 600}}>
+              Forgot your password?
+            </Link>
+          </div>
+
           <div className="retro-divider" style={{margin: '1.5rem 0 1rem'}}>
             <span style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#7A6E5A', letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap'}}>No account?</span>
           </div>

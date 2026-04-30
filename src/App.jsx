@@ -20,6 +20,9 @@ import AdminArticles from './pages/admin/AdminArticles';
 import AdminComments from './pages/admin/AdminComments';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminPostEditor from './pages/admin/AdminPostEditor';
+import AdminSettings from './pages/admin/AdminSettings';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -56,6 +59,8 @@ function AppRoutes() {
           <Route path="/review-policy" element={<ReviewPolicy />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Admin — full page, no public Nav/Footer wrapping needed (AdminLayout handles it) */}
           <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
@@ -64,6 +69,7 @@ function AppRoutes() {
           <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
           <Route path="/admin/new" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
           <Route path="/admin/edit/:slug" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
+          <Route path="/admin/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
 
           {/* 404 */}
           <Route path="*" element={

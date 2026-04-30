@@ -1,8 +1,8 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, FileText, Star, Wrench, MessageSquare,
-  Users, PenSquare, Settings, LogOut, ChevronRight, Home,
+  LayoutDashboard, FileText, MessageSquare,
+  Users, PenSquare, Settings, LogOut, Home,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -24,6 +24,12 @@ const NAV_GROUPS = [
     label: 'Community',
     items: [
       { to: '/admin/users', label: 'Users', icon: Users },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { to: '/admin/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];
