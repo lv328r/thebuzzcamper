@@ -2,7 +2,7 @@ import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FileText, MessageSquare,
-  Users, PenSquare, Settings, LogOut, Home,
+  Users, PenSquare, Settings, LogOut, Home, Sparkles, CalendarClock,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -17,6 +17,8 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/articles', label: 'All Posts', icon: FileText },
       { to: '/admin/new', label: 'New Post', icon: PenSquare },
+      { to: '/admin/ai-write', label: 'AI Writer', icon: Sparkles },
+      { to: '/admin/scheduled', label: 'Scheduled', icon: CalendarClock },
       { to: '/admin/comments', label: 'Comments', icon: MessageSquare },
     ],
   },

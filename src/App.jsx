@@ -21,6 +21,8 @@ import AdminComments from './pages/admin/AdminComments';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminPostEditor from './pages/admin/AdminPostEditor';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminAIWriter from './pages/admin/AdminAIWriter';
+import AdminScheduled from './pages/admin/AdminScheduled';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -70,6 +72,8 @@ function AppRoutes() {
           <Route path="/admin/new" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
           <Route path="/admin/edit/:slug" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
           <Route path="/admin/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
+          <Route path="/admin/ai-write" element={<RequireAdmin><AdminAIWriter /></RequireAdmin>} />
+          <Route path="/admin/scheduled" element={<RequireAdmin><AdminScheduled /></RequireAdmin>} />
 
           {/* 404 */}
           <Route path="*" element={

@@ -23,6 +23,8 @@ function mapArticle(row) {
     cons: row.cons || [],
     buildCategory: row.build_category || 'permanent',
     installDetails: row.install_details || {},
+    status: row.status || 'published',
+    scheduledFor: row.scheduled_for || null,
     comments: [],
   };
 }
@@ -59,17 +61,41 @@ function articleToRow(article) {
   if (article.id) row.id = article.id;
   if (article.buildCategory) row.build_category = article.buildCategory;
   if (article.installDetails) row.install_details = article.installDetails;
+  if (article.status) row.status = article.status;
+  if (article.scheduledFor) row.scheduled_for = article.scheduledFor;
   return row;
 }
 
 // --- Articles ---
-export async function getArticles() {
+export async function getArticles({ adminMode = false } = {}) {
   const { data, error } = await supabase
     .from('articles')
     .select('*')
     .order('published_at', { ascending: false });
   if (error) throw error;
-  return (data || []).map(mapArticle);
+  const now = new Date();
+  return (data || [])
+    .filter((row) => {
+      if (adminMode) return true;
+      const s = row.status || 'published';
+      if (s === 'published') return true;
+      if (s === 'scheduled' && row.scheduled_for && new Date(row.scheduled_for) <= now) return true;
+      return false;
+    })
+    .map(mapArticle);
+}
+
+export async function getScheduledArticles() {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('id, title, slug, type, scheduled_for, status')
+    .eq('status', 'scheduled')
+    .order('scheduled_for', { ascending: true });
+  if (error) return [];
+  return (data || []).map((row) => ({
+    id: row.id, title: row.title, slug: row.slug,
+    type: row.type, scheduledFor: row.scheduled_for, status: row.status,
+  }));
 }
 
 export async function getArticleBySlug(slug) {
@@ -189,7 +215,7 @@ export async function deleteUser(userId) {
 // --- Stats ---
 export async function getSiteStats() {
   const [articlesRes, commentsRes, usersRes] = await Promise.all([
-    supabase.from('articles').select('id, type, title, slug, published_at'),
+    supabase.from('articles').select('id, type, title, slug, published_at, status, scheduled_for'),
     supabase.from('comments').select('id, user_name, content, created_at, article_id, articles(title)'),
     supabase.from('profiles').select('id', { count: 'exact', head: true }),
   ]);
@@ -219,13 +245,19 @@ export async function getSiteStats() {
       articleId: row.article_id,
     }));
 
+  const scheduled = articles.filter((a) => a.status === 'scheduled');
+  const drafts = articles.filter((a) => a.status === 'draft');
+
   return {
     totalArticles: articles.length,
     totalComments: comments.length,
     totalUsers: usersRes.count || 0,
+    totalScheduled: scheduled.length,
+    totalDrafts: drafts.length,
     byType,
     recentArticles,
     recentComments,
+    scheduledArticles: scheduled.map((a) => ({ id: a.id, title: a.title, slug: a.slug, type: a.type, scheduledFor: a.scheduled_for })),
   };
 }
 

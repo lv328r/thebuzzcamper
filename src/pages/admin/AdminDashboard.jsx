@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import AdminLayout, { AdminPageHeader, StatCard } from '../../components/AdminLayout';
 import { getSiteStats } from '../../utils/storage';
 import {
-  FileText, MessageSquare, Users, Star,
-  ArrowRight, TrendingUp, PenSquare,
+  FileText, MessageSquare, Users,
+  ArrowRight, TrendingUp, PenSquare, CalendarClock, Sparkles,
 } from 'lucide-react';
 
 const TYPE_META = {
@@ -47,17 +47,12 @@ export default function AdminDashboard() {
 
       <div style={{padding: '2rem'}}>
         {/* Stat cards */}
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2.5rem'}}>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '1rem', marginBottom: '2.5rem'}}>
           <StatCard label="Total Posts" value={stats.totalArticles} icon={FileText} color="var(--color-buzz-teal)" />
           <StatCard label="Total Comments" value={stats.totalComments} icon={MessageSquare} color="var(--color-buzz-orange)" />
           <StatCard label="Registered Users" value={stats.totalUsers} icon={Users} color="var(--color-buzz-navy)" />
-          <StatCard
-            label="Featured Posts"
-            value={Object.values(stats.byType).reduce((a, b) => a + b, 0)}
-            icon={TrendingUp}
-            color="var(--color-buzz-rust)"
-            sub="across all types"
-          />
+          <StatCard label="Scheduled" value={stats.totalScheduled || 0} icon={CalendarClock} color="#7C3AED" sub="upcoming posts" />
+          <StatCard label="Drafts" value={stats.totalDrafts || 0} icon={TrendingUp} color="#9C8E74" sub="in progress" />
         </div>
 
         {/* Content breakdown */}
@@ -177,9 +172,11 @@ export default function AdminDashboard() {
           </h2>
           <div style={{display: 'flex', gap: '0.875rem', flexWrap: 'wrap'}}>
             {[
+              { to: '/admin/ai-write', label: 'AI Writer', color: 'var(--color-buzz-orange)' },
               { to: '/admin/new?type=journal', label: 'New Journal Entry', color: 'var(--color-buzz-teal)' },
               { to: '/admin/new?type=review', label: 'New Gear Review', color: 'var(--color-buzz-orange)' },
               { to: '/admin/new?type=upgrade', label: 'New Build Log', color: 'var(--color-buzz-navy)' },
+              { to: '/admin/scheduled', label: 'Scheduled Posts', color: '#7C3AED' },
               { to: '/admin/users', label: 'Manage Users', color: 'var(--color-buzz-rust)' },
             ].map(({ to, label, color }) => (
               <Link key={to} to={to} style={{

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout, { AdminPageHeader } from '../../components/AdminLayout';
 import RichEditor from '../../components/RichEditor';
@@ -75,13 +75,23 @@ export default function AdminPostEditor() {
   const isEdit = Boolean(slug);
   const presetType = searchParams.get('type') || 'journal';
 
+  const location = useLocation();
+  const prefill = location.state?.prefill || null;
+
   const [form, setForm] = useState({
-    title: '', slug: '', excerpt: '', content: '', category: presetType,
-    tags: '', featured: false, vendorProvided: false, buildCategory: 'permanent',
-    rating: 0, productName: '', productBrand: '', productPrice: '', productLink: '',
-    pros: '', cons: '',
+    title: prefill?.title || '', slug: prefill?.slug || '',
+    excerpt: prefill?.excerpt || '', content: prefill?.content || '',
+    category: prefill?.category || presetType,
+    tags: (prefill?.tags || []).join(', '),
+    featured: false, vendorProvided: false,
+    buildCategory: prefill?.buildCategory || 'permanent',
+    rating: prefill?.rating || 0,
+    productName: prefill?.productName || '', productBrand: prefill?.productBrand || '',
+    productPrice: prefill?.productPrice || '', productLink: prefill?.productLink || '',
+    pros: (prefill?.pros || []).join('\n'), cons: (prefill?.cons || []).join('\n'),
+    status: 'published', scheduledFor: '',
   });
-  const [installDetails, setInstallDetails] = useState({});
+  const [installDetails, setInstallDetails] = useState(prefill?.installDetails || {});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -142,6 +152,8 @@ export default function AdminPostEditor() {
       vendorProvided: form.vendorProvided,
       buildCategory: form.category === 'upgrade' ? form.buildCategory : undefined,
       installDetails: form.category === 'upgrade' ? installDetails : undefined,
+      status: form.status,
+      scheduledFor: form.status === 'scheduled' ? form.scheduledFor : null,
       author: user.username,
       authorId: user.id,
       ...(isReview ? {
@@ -389,14 +401,59 @@ export default function AdminPostEditor() {
             </Section>
           )}
 
+          {/* Publish Status */}
+          <Section title="Publish Status" color="var(--color-buzz-rust)">
+            {[
+              { value: 'published', label: 'Published', sub: 'Live immediately', dot: '#16A34A' },
+              { value: 'draft',     label: 'Draft',     sub: 'Saved but not visible', dot: '#9C8E74' },
+              { value: 'scheduled', label: 'Scheduled', sub: 'Go live at a set time',  dot: '#7C3AED' },
+            ].map(({ value, label, sub, dot }) => (
+              <label key={value} style={{
+                display: 'flex', alignItems: 'flex-start', gap: '0.625rem', cursor: 'pointer',
+                padding: '0.5rem 0.75rem',
+                border: `2px solid ${form.status === value ? dot : '#C9BEA0'}`,
+                background: form.status === value ? `${dot}18` : 'transparent',
+                transition: 'all 0.12s', marginBottom: '0.4rem',
+              }}>
+                <input type="radio" name="status" value={value}
+                  checked={form.status === value}
+                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                  style={{ accentColor: dot, marginTop: 3 }} />
+                <div>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.04em', color: 'var(--color-buzz-navy)' }}>
+                    <span style={{ width: 7, height: 7, background: dot, borderRadius: '50%', display: 'inline-block' }} />
+                    {label.toUpperCase()}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: '#7A6E5A' }}>{sub}</span>
+                </div>
+              </label>
+            ))}
+            {form.status === 'scheduled' && (
+              <div style={{ marginTop: '0.25rem' }}>
+                <label style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#7A6E5A', marginBottom: 3 }}>
+                  Publish Date &amp; Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.scheduledFor}
+                  onChange={(e) => setForm((f) => ({ ...f, scheduledFor: e.target.value }))}
+                  className="field-input"
+                  style={{ fontSize: '0.82rem' }}
+                />
+              </div>
+            )}
+          </Section>
+
           {/* Publish */}
           <div style={{display: 'flex', flexDirection: 'column', gap: '0.625rem'}}>
             <button onClick={() => handleSave(false)} disabled={saving} className="btn-retro" style={{width: '100%', justifyContent: 'center', opacity: saving ? 0.6 : 1}}>
-              <Save size={14} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Draft'}
+              <Save size={14} /> {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
             </button>
-            <button onClick={() => handleSave(true)} disabled={saving} className="btn-retro btn-retro-teal" style={{width: '100%', justifyContent: 'center', opacity: saving ? 0.6 : 1}}>
-              Save &amp; View Live
-            </button>
+            {form.status === 'published' && (
+              <button onClick={() => handleSave(true)} disabled={saving} className="btn-retro btn-retro-teal" style={{width: '100%', justifyContent: 'center', opacity: saving ? 0.6 : 1}}>
+                Save &amp; View Live
+              </button>
+            )}
           </div>
         </div>
       </div>

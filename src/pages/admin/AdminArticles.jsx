@@ -21,7 +21,7 @@ export default function AdminArticles() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   function load() {
-    getArticles().then(setArticles).catch(() => {});
+    getArticles({ adminMode: true }).then(setArticles).catch(() => {});
   }
 
   useEffect(() => { load(); }, []);
