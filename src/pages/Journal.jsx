@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getArticles } from '../utils/storage';
 import ArticleCard from '../components/ArticleCard';
 import PageHeader from '../components/PageHeader';
 import { Search } from 'lucide-react';
 
 export default function Journal() {
-  const all = getArticles().filter((a) => a.category === 'journal' || a.type === 'journal');
+  const [all, setAll] = useState([]);
   const [search, setSearch] = useState('');
+  useEffect(() => {
+    getArticles().then((data) => setAll(data.filter((a) => a.type === 'journal'))).catch(() => {});
+  }, []);
 
   const filtered = all.filter(
     (a) =>

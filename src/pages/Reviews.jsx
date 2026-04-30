@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getArticles } from '../utils/storage';
 import ArticleCard from '../components/ArticleCard';
 import PageHeader from '../components/PageHeader';
@@ -13,9 +13,12 @@ const RATING_FILTERS = [
 ];
 
 export default function Reviews() {
-  const all = getArticles().filter((a) => a.category === 'review' || a.type === 'review');
+  const [all, setAll] = useState([]);
   const [search, setSearch] = useState('');
   const [minRating, setMinRating] = useState(0);
+  useEffect(() => {
+    getArticles().then((data) => setAll(data.filter((a) => a.type === 'review'))).catch(() => {});
+  }, []);
 
   const filtered = all.filter((a) => {
     const matchSearch =

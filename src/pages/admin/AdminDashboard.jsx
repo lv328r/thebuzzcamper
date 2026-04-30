@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    setStats(getSiteStats());
+    getSiteStats().then(setStats).catch(() => {});
   }, []);
 
   if (!stats) return null;

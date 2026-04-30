@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getArticles } from '../utils/storage';
 import ArticleCard from '../components/ArticleCard';
 import PageHeader from '../components/PageHeader';
@@ -6,8 +6,11 @@ import PageHeader from '../components/PageHeader';
 const TAGS = ['All', 'solar', 'electrical', 'sleeping', 'storage', 'roof rack', 'kitchen', 'lighting'];
 
 export default function Upgrades() {
-  const all = getArticles().filter((a) => a.category === 'upgrade' || a.type === 'upgrade');
+  const [all, setAll] = useState([]);
   const [activeTag, setActiveTag] = useState('All');
+  useEffect(() => {
+    getArticles().then((data) => setAll(data.filter((a) => a.type === 'upgrade'))).catch(() => {});
+  }, []);
 
   const filtered = activeTag === 'All'
     ? all

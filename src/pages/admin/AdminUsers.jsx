@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import AdminLayout, { AdminPageHeader } from '../../components/AdminLayout';
-import { getUsers, updateUserRole, deleteUser, getCurrentUser } from '../../utils/storage';
+import { getUsers, updateUserRole, deleteUser } from '../../utils/storage';
 import { useAuth } from '../../context/AuthContext';
 import { Trash2, Shield, UserCheck, User, Search } from 'lucide-react';
 
@@ -19,19 +19,15 @@ export default function AdminUsers() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editRole, setEditRole] = useState(null);
 
-  function load() { setUsers(getUsers()); }
+  function load() { getUsers().then(setUsers).catch(() => {}); }
   useEffect(() => { load(); }, []);
 
   function handleRoleChange(userId, role) {
-    updateUserRole(userId, role);
-    setEditRole(null);
-    load();
+    updateUserRole(userId, role).then(() => { setEditRole(null); load(); }).catch(() => {});
   }
 
   function handleDelete(userId) {
-    deleteUser(userId);
-    setDeleteTarget(null);
-    load();
+    deleteUser(userId).then(() => { setDeleteTarget(null); load(); }).catch(() => {});
   }
 
   const filtered = users.filter(

@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { initStorage } from './utils/storage';
 import Nav from './components/Nav';
 import Footer from './components/Footer';
 
@@ -21,8 +20,6 @@ import AdminArticles from './pages/admin/AdminArticles';
 import AdminComments from './pages/admin/AdminComments';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminPostEditor from './pages/admin/AdminPostEditor';
-
-initStorage();
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();

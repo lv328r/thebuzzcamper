@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getArticleBySlug, saveArticle } from '../utils/storage';
+import { getArticleBySlug } from '../utils/storage';
 import CommentSection from '../components/CommentSection';
 import { Calendar, Tag, ArrowLeft, Star, CheckCircle, XCircle, ShoppingCart, AlertTriangle, Pencil } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -32,14 +32,17 @@ export default function ArticlePage() {
   const [article, setArticle] = useState(null);
 
   useEffect(() => {
-    const found = getArticleBySlug(slug);
-    if (!found) { navigate('/404', { replace: true }); return; }
-    setArticle(found);
+    getArticleBySlug(slug).then((found) => {
+      if (!found) { navigate('/404', { replace: true }); return; }
+      setArticle(found);
+    }).catch(() => navigate('/404', { replace: true }));
   }, [slug, navigate]);
 
-  function handleCommentUpdate(updated) {
-    setArticle({ ...updated });
-    saveArticle(updated);
+  function handleCommentUpdate(newComment) {
+    setArticle((prev) => ({
+      ...prev,
+      comments: [...(prev.comments || []), newComment],
+    }));
   }
 
   if (!article) return null;

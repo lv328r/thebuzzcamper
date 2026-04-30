@@ -1,206 +1,240 @@
-import { SEED_ARTICLES, SEED_USERS } from '../data/seedData';
+import { supabase } from '../lib/supabase';
 
-const KEYS = {
-  ARTICLES: 'buzz_articles',
-  USERS: 'buzz_users',
-  CURRENT_USER: 'buzz_current_user',
-  VERSION: 'buzz_data_version',
-};
-
-const DATA_VERSION = '2';
-
-function init() {
-  const storedVersion = localStorage.getItem(KEYS.VERSION);
-  if (storedVersion !== DATA_VERSION) {
-    // Seed data changed — re-initialise articles and users, preserve any content added after V1
-    const existingUsers = storedVersion ? JSON.parse(localStorage.getItem(KEYS.USERS) || '[]') : [];
-    const mergedUsers = [...SEED_USERS];
-    for (const u of existingUsers) {
-      if (!mergedUsers.find((su) => su.id === u.id)) {
-        mergedUsers.push(u);
-      }
-    }
-    localStorage.setItem(KEYS.USERS, JSON.stringify(mergedUsers));
-    if (!storedVersion) {
-      localStorage.setItem(KEYS.ARTICLES, JSON.stringify(SEED_ARTICLES));
-    }
-    localStorage.setItem(KEYS.VERSION, DATA_VERSION);
-    return;
-  }
-  if (!localStorage.getItem(KEYS.ARTICLES)) {
-    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(SEED_ARTICLES));
-  }
-  if (!localStorage.getItem(KEYS.USERS)) {
-    localStorage.setItem(KEYS.USERS, JSON.stringify(SEED_USERS));
-  }
+// --- Shape mappers ---
+function mapArticle(row) {
+  return {
+    id: row.id,
+    type: row.type,
+    category: row.type,
+    title: row.title,
+    slug: row.slug,
+    excerpt: row.excerpt || '',
+    content: row.content || '',
+    tags: row.tags || [],
+    featured: row.featured || false,
+    vendorProvided: row.vendor_provided || false,
+    author: row.author_name || '',
+    authorId: row.author_id || null,
+    date: row.published_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+    coverImage: row.cover_image || null,
+    rating: row.rating || 0,
+    product: row.product || null,
+    pros: row.pros || [],
+    cons: row.cons || [],
+    comments: [],
+  };
 }
 
-export function initStorage() {
-  init();
+function mapComment(row) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    userName: row.user_name,
+    content: row.content,
+    date: row.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+  };
 }
 
-export function getArticles() {
-  init();
-  return JSON.parse(localStorage.getItem(KEYS.ARTICLES) || '[]');
+function articleToRow(article) {
+  const row = {
+    slug: article.slug,
+    title: article.title,
+    excerpt: article.excerpt || '',
+    content: article.content || '',
+    type: article.type || article.category || 'journal',
+    tags: article.tags || [],
+    featured: article.featured || false,
+    vendor_provided: article.vendorProvided || false,
+    cover_image: article.coverImage || null,
+    author_id: article.authorId || null,
+    author_name: article.author || '',
+    rating: article.rating || null,
+    product: article.product || null,
+    pros: article.pros || [],
+    cons: article.cons || [],
+    updated_at: new Date().toISOString(),
+  };
+  if (article.id) row.id = article.id;
+  return row;
 }
 
-export function getArticleBySlug(slug) {
-  return getArticles().find((a) => a.slug === slug);
+// --- Articles ---
+export async function getArticles() {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('published_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapArticle);
 }
 
-export function saveArticle(article) {
-  const articles = getArticles();
-  const idx = articles.findIndex((a) => a.id === article.id);
-  if (idx >= 0) {
-    articles[idx] = article;
-  } else {
-    articles.unshift(article);
-  }
-  localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
-  return article;
+export async function getArticleBySlug(slug) {
+  const { data: article, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  if (error) return null;
+
+  const { data: comments } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('article_id', article.id)
+    .order('created_at', { ascending: true });
+
+  return { ...mapArticle(article), comments: (comments || []).map(mapComment) };
 }
 
-export function deleteArticle(id) {
-  const articles = getArticles().filter((a) => a.id !== id);
-  localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
+export async function saveArticle(article) {
+  const row = articleToRow(article);
+  const { data, error } = await supabase
+    .from('articles')
+    .upsert(row, { onConflict: 'slug' })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapArticle(data);
 }
 
-export function addComment(articleId, comment) {
-  const articles = getArticles();
-  const article = articles.find((a) => a.id === articleId);
-  if (!article) return;
-  article.comments = article.comments || [];
-  article.comments.push(comment);
-  localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
-  return article;
+export async function deleteArticle(id) {
+  const { error } = await supabase.from('articles').delete().eq('id', id);
+  if (error) throw error;
 }
 
-export function getUsers() {
-  init();
-  return JSON.parse(localStorage.getItem(KEYS.USERS) || '[]');
+export async function toggleFeatured(id) {
+  const { data: current } = await supabase.from('articles').select('featured').eq('id', id).single();
+  const { data, error } = await supabase
+    .from('articles')
+    .update({ featured: !current?.featured })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return mapArticle(data);
 }
 
-export function getUserById(id) {
-  return getUsers().find((u) => u.id === id);
+// --- Comments ---
+export async function addComment(articleId, comment) {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({
+      article_id: articleId,
+      user_id: comment.userId,
+      user_name: comment.userName,
+      content: comment.content,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapComment(data);
 }
 
-export function createUser(user) {
-  const users = getUsers();
-  if (users.find((u) => u.email === user.email)) {
-    throw new Error('Email already registered');
-  }
-  if (users.find((u) => u.username === user.username)) {
-    throw new Error('Username already taken');
-  }
-  users.push(user);
-  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-  return user;
+export async function deleteComment(articleId, commentId) {
+  const { error } = await supabase.from('comments').delete().eq('id', commentId);
+  if (error) throw error;
 }
 
-export function loginUser(email, password) {
-  const users = getUsers();
-  const user = users.find((u) => u.email === email && u.passwordHash === password);
-  if (!user) throw new Error('Invalid email or password');
-  const session = { ...user };
-  delete session.passwordHash;
-  localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(session));
-  return session;
+export async function getAllComments() {
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*, articles(id, title, slug, type)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map((row) => ({
+    ...mapComment(row),
+    articleId: row.article_id,
+    articleTitle: row.articles?.title || '',
+    articleSlug: row.articles?.slug || '',
+    articleType: row.articles?.type || 'journal',
+  }));
 }
 
-export function logoutUser() {
-  localStorage.removeItem(KEYS.CURRENT_USER);
+// --- Users / Profiles ---
+export async function getUsers() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map((row) => ({
+    id: row.id,
+    username: row.username,
+    email: '',
+    role: row.role,
+    bio: row.bio || '',
+    joinDate: row.created_at?.split('T')[0],
+  }));
 }
 
-export function getCurrentUser() {
-  const raw = localStorage.getItem(KEYS.CURRENT_USER);
-  return raw ? JSON.parse(raw) : null;
+export async function updateUserRole(userId, role) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ role })
+    .eq('id', userId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
-export function generateId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+export async function deleteUser(userId) {
+  const { error } = await supabase.from('profiles').delete().eq('id', userId);
+  if (error) throw error;
 }
 
-export function deleteComment(articleId, commentId) {
-  const articles = getArticles();
-  const article = articles.find((a) => a.id === articleId);
-  if (!article) return;
-  article.comments = (article.comments || []).filter((c) => c.id !== commentId);
-  localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
-  return article;
-}
+// --- Stats ---
+export async function getSiteStats() {
+  const [articlesRes, commentsRes, usersRes] = await Promise.all([
+    supabase.from('articles').select('id, type, title, slug, published_at'),
+    supabase.from('comments').select('id, user_name, content, created_at, article_id, articles(title)'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+  ]);
 
-export function updateUserRole(userId, role) {
-  const users = getUsers();
-  const user = users.find((u) => u.id === userId);
-  if (!user) throw new Error('User not found');
-  user.role = role;
-  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-
-  const current = getCurrentUser();
-  if (current && current.id === userId) {
-    const updated = { ...current, role };
-    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(updated));
-  }
-  return user;
-}
-
-export function deleteUser(userId) {
-  const users = getUsers().filter((u) => u.id !== userId);
-  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-}
-
-export function getSiteStats() {
-  const articles = getArticles();
-  const users = getUsers();
-  const allComments = articles.flatMap((a) => a.comments || []);
+  const articles = articlesRes.data || [];
+  const comments = commentsRes.data || [];
 
   const byType = articles.reduce((acc, a) => {
-    const t = a.type || a.category || 'journal';
-    acc[t] = (acc[t] || 0) + 1;
+    acc[a.type] = (acc[a.type] || 0) + 1;
     return acc;
   }, {});
 
   const recentArticles = [...articles]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
+    .slice(0, 5)
+    .map(mapArticle);
 
-  const recentComments = allComments
-    .map((c) => ({
-      ...c,
-      articleTitle: articles.find((a) => (a.comments || []).some((ac) => ac.id === c.id))?.title || '',
-      articleId: articles.find((a) => (a.comments || []).some((ac) => ac.id === c.id))?.id || '',
-    }))
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+  const recentComments = [...comments]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5)
+    .map((row) => ({
+      id: row.id,
+      userName: row.user_name,
+      content: row.content,
+      date: row.created_at?.split('T')[0],
+      articleTitle: row.articles?.title || '',
+      articleId: row.article_id,
+    }));
 
   return {
     totalArticles: articles.length,
-    totalComments: allComments.length,
-    totalUsers: users.length,
+    totalComments: comments.length,
+    totalUsers: usersRes.count || 0,
     byType,
     recentArticles,
     recentComments,
   };
 }
 
-export function toggleFeatured(articleId) {
-  const articles = getArticles();
-  const article = articles.find((a) => a.id === articleId);
-  if (!article) return;
-  article.featured = !article.featured;
-  localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
-  return article;
+// --- Image upload ---
+export async function uploadImage(file) {
+  const ext = file.name.split('.').pop();
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('images').upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from('images').getPublicUrl(path);
+  return data.publicUrl;
 }
 
-export function getAllComments() {
-  const articles = getArticles();
-  return articles.flatMap((a) =>
-    (a.comments || []).map((c) => ({
-      ...c,
-      articleId: a.id,
-      articleTitle: a.title,
-      articleSlug: a.slug,
-      articleType: a.type || a.category,
-    }))
-  ).sort((a, b) => new Date(b.date) - new Date(a.date));
-}
+// --- Compat stubs ---
+export function initStorage() {}
+export function generateId() { return crypto.randomUUID(); }

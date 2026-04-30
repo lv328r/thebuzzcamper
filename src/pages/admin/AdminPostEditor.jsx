@@ -88,8 +88,8 @@ export default function AdminPostEditor() {
   useEffect(() => {
     if (!isAuthor) { navigate('/', { replace: true }); return; }
     if (isEdit && slug) {
-      const existing = getArticleBySlug(slug);
-      if (existing) {
+      getArticleBySlug(slug).then((existing) => {
+        if (!existing) return;
         setForm({
           title: existing.title || '',
           slug: existing.slug || '',
@@ -107,7 +107,7 @@ export default function AdminPostEditor() {
           pros: (existing.pros || []).join('\n'),
           cons: (existing.cons || []).join('\n'),
         });
-      }
+      });
     }
   }, [isAuthor, isEdit, slug, navigate]);
 
@@ -126,13 +126,11 @@ export default function AdminPostEditor() {
 
   function buildArticle() {
     const isReview = form.category === 'review';
-    const existingArticle = isEdit ? getArticleBySlug(slug) : null;
     return {
-      id: existingArticle?.id || generateId(),
+      slug: form.slug,
       type: form.category,
       category: form.category,
       title: form.title,
-      slug: form.slug,
       excerpt: form.excerpt,
       content: form.content,
       tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
@@ -140,9 +138,6 @@ export default function AdminPostEditor() {
       vendorProvided: form.vendorProvided,
       author: user.username,
       authorId: user.id,
-      date: existingArticle?.date || new Date().toISOString().split('T')[0],
-      comments: existingArticle?.comments || [],
-      coverImage: existingArticle?.coverImage || null,
       ...(isReview ? {
         rating: Number(form.rating),
         product: {
@@ -157,7 +152,7 @@ export default function AdminPostEditor() {
     };
   }
 
-  function handleSave(andNavigate = false) {
+  async function handleSave(andNavigate = false) {
     if (!form.title || !form.slug || !form.content) {
       setError('Title, slug, and content are required.');
       return;
@@ -166,7 +161,7 @@ export default function AdminPostEditor() {
     setError('');
     try {
       const article = buildArticle();
-      saveArticle(article);
+      await saveArticle(article);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       if (andNavigate) {
@@ -174,7 +169,7 @@ export default function AdminPostEditor() {
         navigate(path);
       }
     } catch (err) {
-      setError('Save failed. Please try again.');
+      setError('Save failed: ' + (err.message || 'Please try again.'));
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import { uploadImage } from '../utils/storage';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -80,15 +81,21 @@ export default function RichEditor({ value, onChange, placeholder = 'Start writi
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
-  const handleImageFile = useCallback((e) => {
+  const handleImageFile = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file || !editor) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      editor.chain().focus().setImage({ src: ev.target.result, alt: file.name }).run();
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    try {
+      const url = await uploadImage(file);
+      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+    } catch {
+      // Fallback to base64 if storage upload fails
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        editor.chain().focus().setImage({ src: ev.target.result, alt: file.name }).run();
+      };
+      reader.readAsDataURL(file);
+    }
   }, [editor]);
 
   const handleImageUrl = useCallback(() => {

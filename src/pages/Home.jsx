@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getArticles } from '../utils/storage';
 import ArticleCard from '../components/ArticleCard';
@@ -35,7 +36,8 @@ function RetroSection({ eyebrow, title, children, bg = 'var(--color-buzz-cream)'
 }
 
 export default function Home() {
-  const articles = getArticles();
+  const [articles, setArticles] = useState([]);
+  useEffect(() => { getArticles().then(setArticles).catch(() => {}); }, []);
   const featured = articles.filter((a) => a.featured).slice(0, 3);
 
   return (

@@ -21,20 +21,17 @@ export default function AdminArticles() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   function load() {
-    setArticles(getArticles());
+    getArticles().then(setArticles).catch(() => {});
   }
 
   useEffect(() => { load(); }, []);
 
   function handleToggleFeatured(id) {
-    toggleFeatured(id);
-    load();
+    toggleFeatured(id).then(load).catch(() => {});
   }
 
   function handleDelete(id) {
-    deleteArticle(id);
-    setDeleteTarget(null);
-    load();
+    deleteArticle(id).then(() => { setDeleteTarget(null); load(); }).catch(() => {});
   }
 
   function handleSort(field) {

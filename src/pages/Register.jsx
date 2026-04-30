@@ -17,7 +17,7 @@ export default function Register() {
     if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
     if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     setLoading(true);
-    try { register({ username: form.username, email: form.email, password: form.password }); navigate('/', { replace: true }); }
+    try { await register(form.email, form.password, form.username); navigate('/', { replace: true }); }
     catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }

@@ -15,13 +15,11 @@ export default function AdminComments() {
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  function load() { setComments(getAllComments()); }
+  function load() { getAllComments().then(setComments).catch(() => {}); }
   useEffect(() => { load(); }, []);
 
   function handleDelete({ articleId, id }) {
-    deleteComment(articleId, id);
-    setDeleteTarget(null);
-    load();
+    deleteComment(articleId, id).then(() => { setDeleteTarget(null); load(); }).catch(() => {});
   }
 
   const filtered = comments.filter(

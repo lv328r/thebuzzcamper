@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { addComment, generateId } from '../utils/storage';
+import { addComment } from '../utils/storage';
 import { Link } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 
@@ -11,23 +11,18 @@ export default function CommentSection({ article, onUpdate }) {
   const [error, setError] = useState('');
   const comments = article.comments || [];
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!text.trim()) return;
     setSubmitting(true);
     setError('');
     try {
-      const comment = {
-        id: generateId(),
+      const saved = await addComment(article.id, {
         userId: user.id,
         userName: user.username,
-        userAvatar: null,
         content: text.trim(),
-        date: new Date().toISOString().split('T')[0],
-        likes: 0,
-      };
-      const updated = addComment(article.id, comment);
-      onUpdate(updated);
+      });
+      onUpdate(saved);
       setText('');
     } catch {
       setError('Failed to post comment. Please try again.');
