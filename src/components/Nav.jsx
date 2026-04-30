@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, PenSquare } from 'lucide-react';
+import { Menu, X, LogOut, PenSquare, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const navLinks = [
@@ -14,7 +14,7 @@ const navLinks = [
 
 export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout, isAuthor } = useAuth();
+  const { user, logout, isAuthor, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -38,9 +38,24 @@ export default function Nav() {
         </span>
         <div style={{display: 'flex', gap: '1.25rem', alignItems: 'center', flexShrink: 0}}>
           {user ? (
-            <button onClick={handleLogout} style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(245,237,204,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4}}>
-              <LogOut size={10} /> Sign Out
-            </button>
+            <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+              {isAdmin && (
+                <Link to="/admin" style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: 'var(--color-buzz-orange)', textDecoration: 'none',
+                  border: '1px solid rgba(232,101,10,0.4)', padding: '0.2rem 0.5rem',
+                }}>
+                  <LayoutDashboard size={10} /> Admin
+                </Link>
+              )}
+              <span style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(245,237,204,0.35)', letterSpacing: '0.06em'}}>
+                {user.username}
+              </span>
+              <button onClick={handleLogout} style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(245,237,204,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4}}>
+                <LogOut size={10} /> Sign Out
+              </button>
+            </div>
           ) : (
             <>
               <Link to="/login" style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(245,237,204,0.5)', letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none'}}>Sign In</Link>
