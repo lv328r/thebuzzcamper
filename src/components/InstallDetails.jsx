@@ -1,4 +1,4 @@
-import { ExternalLink, Youtube, Package, Clock, Box, Wrench, Info, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, Video, Package, Clock, Box, Wrench, Info, Plus, Trash2 } from 'lucide-react';
 
 // ─── READ-ONLY DISPLAY (ArticlePage) ─────────────────────────────────────────
 
@@ -68,7 +68,7 @@ export function InstallDetailsDisplay({ details }) {
         )}
 
         {(installVideos?.length > 0) && (
-          <DetailCard icon={Youtube} title="Install Videos" color="#DC2626">
+          <DetailCard icon={Video} title="Install Videos" color="#DC2626">
             <LinkList items={installVideos} />
           </DetailCard>
         )}
