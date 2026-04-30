@@ -22,6 +22,7 @@ function mapArticle(row) {
     pros: row.pros || [],
     cons: row.cons || [],
     buildCategory: row.build_category || 'permanent',
+    installDetails: row.install_details || {},
     comments: [],
   };
 }
@@ -57,6 +58,7 @@ function articleToRow(article) {
   };
   if (article.id) row.id = article.id;
   if (article.buildCategory) row.build_category = article.buildCategory;
+  if (article.installDetails) row.install_details = article.installDetails;
   return row;
 }
 

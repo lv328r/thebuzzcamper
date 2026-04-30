@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext';
 import AdminLayout, { AdminPageHeader } from '../../components/AdminLayout';
 import RichEditor from '../../components/RichEditor';
+import { InstallDetailsEditor } from '../../components/InstallDetails';
 import { saveArticle, getArticleBySlug, generateId } from '../../utils/storage';
 import { Save, ArrowLeft, Star } from 'lucide-react';
 
@@ -80,6 +81,7 @@ export default function AdminPostEditor() {
     rating: 0, productName: '', productBrand: '', productPrice: '', productLink: '',
     pros: '', cons: '',
   });
+  const [installDetails, setInstallDetails] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -108,6 +110,7 @@ export default function AdminPostEditor() {
           pros: (existing.pros || []).join('\n'),
           cons: (existing.cons || []).join('\n'),
         });
+        setInstallDetails(existing.installDetails || {});
       });
     }
   }, [isAuthor, isEdit, slug, navigate]);
@@ -138,6 +141,7 @@ export default function AdminPostEditor() {
       featured: form.featured,
       vendorProvided: form.vendorProvided,
       buildCategory: form.category === 'upgrade' ? form.buildCategory : undefined,
+      installDetails: form.category === 'upgrade' ? installDetails : undefined,
       author: user.username,
       authorId: user.id,
       ...(isReview ? {
@@ -256,6 +260,23 @@ export default function AdminPostEditor() {
                   </p>
                 </div>
               </Section>
+
+              {form.category === 'upgrade' && (
+                <div style={{border: '2.5px solid var(--color-buzz-navy)', boxShadow: '4px 4px 0 var(--color-buzz-teal)', background: '#FBF6E8', overflow: 'hidden'}}>
+                  <div style={{
+                    background: 'var(--color-buzz-navy)',
+                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.06) 1.5px, transparent 1.5px)',
+                    backgroundSize: '12px 12px',
+                    padding: '0.625rem 1.25rem',
+                  }}>
+                    <span style={{fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.08em', color: 'var(--color-buzz-teal)'}}>INSTALL DETAILS</span>
+                    <p style={{fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', marginTop: '0.2rem', letterSpacing: '0.04em'}}>Links, extras, shipping &amp; ID. Buzz notes — displayed as structured sections on the article</p>
+                  </div>
+                  <div style={{padding: '1.25rem'}}>
+                    <InstallDetailsEditor value={installDetails} onChange={setInstallDetails} />
+                  </div>
+                </div>
+              )}
           </>
         </div>
 

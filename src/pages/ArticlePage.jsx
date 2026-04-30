@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getArticleBySlug } from '../utils/storage';
 import CommentSection from '../components/CommentSection';
+import { InstallDetailsDisplay } from '../components/InstallDetails';
 import { Calendar, Tag, ArrowLeft, Star, CheckCircle, XCircle, ShoppingCart, AlertTriangle, Pencil } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -207,6 +208,9 @@ export default function ArticlePage() {
 
         {/* Body */}
         <article className="article-body" dangerouslySetInnerHTML={{ __html: article.content }} />
+
+        {/* Install details (Build Log only) */}
+        {type === 'upgrade' && <InstallDetailsDisplay details={article.installDetails} />}
 
         {/* Vendor disclosure */}
         {article.vendorProvided && (
