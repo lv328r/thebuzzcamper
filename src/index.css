@@ -1,0 +1,320 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@theme {
+  --color-buzz-orange: #E8650A;
+  --color-buzz-orange-dark: #C44B1A;
+  --color-buzz-cream: #F5EDCC;
+  --color-buzz-cream-dark: #EDE0B4;
+  --color-buzz-teal: #1B7B7A;
+  --color-buzz-teal-light: #2A9D9C;
+  --color-buzz-navy: #1B3A4B;
+  --color-buzz-sand: #D4A96A;
+  --color-buzz-rust: #C44B1A;
+  --color-buzz-red: #C93A2B;
+  --color-buzz-yellow: #F5C842;
+  --font-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+}
+
+/* ============================
+   BASE
+   ============================ */
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-buzz-cream);
+    color: var(--color-buzz-navy);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ============================
+   PATTERNS / TEXTURES
+   ============================ */
+.halftone-bg {
+  background-color: var(--color-buzz-cream);
+  background-image: radial-gradient(circle, rgba(27,58,75,0.18) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+
+.halftone-teal {
+  background-color: var(--color-buzz-teal);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+.halftone-navy {
+  background-color: var(--color-buzz-navy);
+  background-image: radial-gradient(circle, rgba(232,101,10,0.12) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+.halftone-orange {
+  background-color: var(--color-buzz-orange);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+}
+
+.paper-texture {
+  background-color: #F9F3E0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.03) 28px, rgba(0,0,0,0.03) 29px);
+}
+
+/* ============================
+   TYPOGRAPHY
+   ============================ */
+.font-display { font-family: var(--font-display); }
+.font-serif   { font-family: var(--font-serif); }
+.font-mono    { font-family: var(--font-mono); }
+
+.retro-heading {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.retro-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ============================
+   DIVIDERS
+   ============================ */
+.retro-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.retro-divider::before,
+.retro-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1.5px dashed rgba(27,58,75,0.3);
+}
+
+.stripe-bar {
+  height: 6px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-buzz-navy)  0px, var(--color-buzz-navy)  20px,
+    var(--color-buzz-orange) 20px, var(--color-buzz-orange) 40px
+  );
+}
+
+.stripe-bar-cream {
+  height: 5px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--color-buzz-cream)  0px, var(--color-buzz-cream)  20px,
+    rgba(255,255,255,0.2) 20px, rgba(255,255,255,0.2) 40px
+  );
+}
+
+/* ============================
+   BADGES / RIBBONS
+   ============================ */
+.ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-buzz-red);
+  color: white;
+  padding: 0.3rem 1.2rem 0.3rem 0.9rem;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ribbon-teal {
+  background: var(--color-buzz-teal);
+}
+
+.ribbon-orange {
+  background: var(--color-buzz-orange);
+}
+
+.ribbon-navy {
+  background: var(--color-buzz-navy);
+}
+
+.badge-retro {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid currentColor;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ============================
+   BUTTONS
+   ============================ */
+.btn-retro {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.75rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 3px solid var(--color-buzz-navy);
+  background: var(--color-buzz-orange);
+  color: white;
+  box-shadow: 5px 5px 0 var(--color-buzz-navy);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.btn-retro:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--color-buzz-navy);
+}
+
+.btn-retro:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 var(--color-buzz-navy);
+}
+
+.btn-retro-outline {
+  background: transparent;
+  color: white;
+  border-color: white;
+  box-shadow: 5px 5px 0 rgba(255,255,255,0.3);
+}
+
+.btn-retro-outline:hover {
+  background: white;
+  color: var(--color-buzz-navy);
+}
+
+.btn-retro-teal {
+  background: var(--color-buzz-teal);
+  box-shadow: 5px 5px 0 var(--color-buzz-navy);
+}
+
+.btn-retro-navy {
+  background: var(--color-buzz-navy);
+  box-shadow: 5px 5px 0 var(--color-buzz-orange);
+}
+
+/* ============================
+   CARDS
+   ============================ */
+.retro-card {
+  background: #FBF6E8;
+  border: 2.5px solid var(--color-buzz-navy);
+  box-shadow: 5px 5px 0 var(--color-buzz-navy);
+  transition: all 0.15s ease;
+}
+
+.retro-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--color-buzz-navy);
+}
+
+.retro-card-orange {
+  box-shadow: 5px 5px 0 var(--color-buzz-orange);
+}
+
+.retro-card-orange:hover {
+  box-shadow: 7px 7px 0 var(--color-buzz-orange);
+}
+
+/* ============================
+   FORM INPUTS
+   ============================ */
+.field-input {
+  width: 100%;
+  border: 2.5px solid var(--color-buzz-navy);
+  background: #FBF6E8;
+  padding: 0.65rem 0.875rem;
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  color: var(--color-buzz-navy);
+  outline: none;
+  border-radius: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field-input:focus {
+  border-color: var(--color-buzz-orange);
+  box-shadow: 3px 3px 0 var(--color-buzz-orange);
+}
+
+/* ============================
+   ARTICLE PROSE
+   ============================ */
+.article-body h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-buzz-navy);
+  border-bottom: 3px solid var(--color-buzz-orange);
+  padding-bottom: 0.4rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-body h3 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-buzz-teal);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.article-body p {
+  margin: 1rem 0;
+  color: #2D3748;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+
+.article-body blockquote {
+  border-left: 5px solid var(--color-buzz-orange);
+  background: rgba(232,101,10,0.06);
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--color-buzz-navy);
+}
+
+.article-body strong { color: var(--color-buzz-navy); font-weight: 700; }
+.article-body ul { list-style: disc; padding-left: 1.5rem; margin: 1rem 0; }
+.article-body li { margin: 0.4rem 0; }
+.article-body a { color: var(--color-buzz-orange); text-decoration: underline; }
+
+/* ============================
+   SCROLL
+   ============================ */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: var(--color-buzz-cream); }
+::-webkit-scrollbar-thumb { background: var(--color-buzz-orange); }
