@@ -7,7 +7,7 @@ import Home from './pages/Home';
 import UnderConstruction from './pages/UnderConstruction';
 
 // Set to true to show the under construction page to all visitors
-const UNDER_CONSTRUCTION = false;
+const UNDER_CONSTRUCTION = true;
 import Journal from './pages/Journal';
 import Reviews from './pages/Reviews';
 import Upgrades from './pages/Upgrades';
