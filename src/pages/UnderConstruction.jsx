@@ -1,38 +1,6 @@
 import { useState } from 'react';
 import { Wrench, Mail, Instagram, CheckCircle } from 'lucide-react';
 
-function VanSVG() {
-  return (
-    <svg viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: 380, display: 'block' }}>
-      {/* Body */}
-      <rect x="10" y="60" width="280" height="80" rx="6" fill="#1B3A4B" stroke="#E8650A" strokeWidth="3" />
-      {/* Roof rack */}
-      <rect x="30" y="45" width="200" height="18" rx="3" fill="#1B3A4B" stroke="#E8650A" strokeWidth="2.5" />
-      <line x1="70" y1="45" x2="70" y2="63" stroke="#E8650A" strokeWidth="2" />
-      <line x1="130" y1="45" x2="130" y2="63" stroke="#E8650A" strokeWidth="2" />
-      <line x1="190" y1="45" x2="190" y2="63" stroke="#E8650A" strokeWidth="2" />
-      {/* Windscreen */}
-      <rect x="220" y="70" width="55" height="42" rx="3" fill="#1B7B7A" opacity="0.7" stroke="#E8650A" strokeWidth="2" />
-      {/* Side window */}
-      <rect x="70" y="72" width="60" height="30" rx="3" fill="#1B7B7A" opacity="0.5" stroke="#E8650A" strokeWidth="1.5" />
-      <rect x="140" y="72" width="60" height="30" rx="3" fill="#1B7B7A" opacity="0.5" stroke="#E8650A" strokeWidth="1.5" />
-      {/* VW circle */}
-      <circle cx="275" cy="91" r="12" fill="#E8650A" stroke="#1B3A4B" strokeWidth="2" />
-      <text x="275" y="96" textAnchor="middle" fontFamily="Bebas Neue, sans-serif" fontSize="11" fill="#1B3A4B">VW</text>
-      {/* Stripe */}
-      <rect x="10" y="108" width="280" height="8" fill="#E8650A" />
-      {/* Wheels */}
-      <circle cx="70" cy="148" r="18" fill="#1B3A4B" stroke="#E8650A" strokeWidth="3" />
-      <circle cx="70" cy="148" r="8" fill="#E8650A" />
-      <circle cx="220" cy="148" r="18" fill="#1B3A4B" stroke="#E8650A" strokeWidth="3" />
-      <circle cx="220" cy="148" r="8" fill="#E8650A" />
-      {/* Tent on roof */}
-      <polygon points="30,45 130,10 230,45" fill="#E8650A" opacity="0.85" stroke="#1B3A4B" strokeWidth="2" />
-      <line x1="130" y1="10" x2="130" y2="45" stroke="#1B3A4B" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
 export default function UnderConstruction() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -87,9 +55,23 @@ export default function UnderConstruction() {
 
         <div style={{ padding: '2.5rem 2.5rem 2rem' }}>
 
-          {/* Van illustration */}
-          <div style={{ marginBottom: '1.75rem' }}>
-            <VanSVG />
+          {/* Van animation */}
+          <div style={{
+            marginBottom: '1.75rem',
+            border: '3px solid var(--color-buzz-orange)',
+            boxShadow: '4px 4px 0 var(--color-buzz-navy)',
+            background: '#000',
+            overflow: 'hidden',
+            lineHeight: 0,
+          }}>
+            <video
+              src="/vw-animation.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ width: '100%', display: 'block', maxHeight: 260, objectFit: 'cover' }}
+            />
           </div>
 
           {/* Headline */}
