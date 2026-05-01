@@ -4,6 +4,10 @@ import Nav from './components/Nav';
 import Footer from './components/Footer';
 
 import Home from './pages/Home';
+import UnderConstruction from './pages/UnderConstruction';
+
+// Set to true to show the under construction page to all visitors
+const UNDER_CONSTRUCTION = false;
 import Journal from './pages/Journal';
 import Reviews from './pages/Reviews';
 import Upgrades from './pages/Upgrades';
@@ -42,6 +46,28 @@ function RequireAdmin({ children }) {
 }
 
 function AppRoutes() {
+  if (UNDER_CONSTRUCTION) {
+    return (
+      <Routes>
+        <Route path="/admin/*" element={
+          <div style={{minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)'}}>
+            <Nav /><main style={{flex: 1}}><Routes>
+              <Route path="/" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+              <Route path="/articles" element={<RequireAdmin><AdminArticles /></RequireAdmin>} />
+              <Route path="/ai-write" element={<RequireAdmin><AdminAIWriter /></RequireAdmin>} />
+              <Route path="/scheduled" element={<RequireAdmin><AdminScheduled /></RequireAdmin>} />
+              <Route path="/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
+              <Route path="/new" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
+              <Route path="/edit/:slug" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
+            </Routes></main><Footer />
+          </div>
+        } />
+        <Route path="/login" element={<div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}><Nav /><main style={{flex:1}}><Login /></main><Footer /></div>} />
+        <Route path="*" element={<UnderConstruction />} />
+      </Routes>
+    );
+  }
+
   return (
     <div style={{minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)'}}>
       <Nav />
@@ -74,6 +100,9 @@ function AppRoutes() {
           <Route path="/admin/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
           <Route path="/admin/ai-write" element={<RequireAdmin><AdminAIWriter /></RequireAdmin>} />
           <Route path="/admin/scheduled" element={<RequireAdmin><AdminScheduled /></RequireAdmin>} />
+
+          {/* Under construction preview */}
+          <Route path="/under-construction" element={<UnderConstruction />} />
 
           {/* 404 */}
           <Route path="*" element={
