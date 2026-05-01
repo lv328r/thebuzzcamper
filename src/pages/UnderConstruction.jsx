@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Wrench, Mail, Instagram, CheckCircle } from 'lucide-react';
+import { Wrench, Mail, CheckCircle } from 'lucide-react';
 
 export default function UnderConstruction() {
   const [email, setEmail] = useState('');
@@ -167,7 +167,7 @@ export default function UnderConstruction() {
                 border: '1.5px solid var(--color-buzz-teal)',
                 padding: '0.4rem 0.875rem',
               }}>
-              <Instagram size={13} /> @THEBUZZCAMPER
+              @THEBUZZCAMPER
             </a>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#9C8E74', letterSpacing: '0.06em' }}>
               VW ID. BUZZ &bull; CAMPING &bull; OVERLAND
