@@ -179,9 +179,20 @@ export default function UnderConstruction() {
         <div style={{ height: 6, background: 'linear-gradient(90deg, var(--color-buzz-teal) 33%, var(--color-buzz-orange) 33% 66%, var(--color-buzz-navy) 66%)' }} />
       </div>
 
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.08em', marginTop: '1.5rem' }}>
-        &copy; 2026 THE BUZZ CAMPER &mdash; THEBUZZCAMPER.COM
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.08em' }}>
+          &copy; 2026 THE BUZZ CAMPER &mdash; THEBUZZCAMPER.COM
+        </p>
+        <a href="/login" style={{
+          fontFamily: 'var(--font-mono)', fontSize: '0.58rem', letterSpacing: '0.08em',
+          color: 'rgba(255,255,255,0.15)', textDecoration: 'none',
+        }}
+        onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+        onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}
+        >
+          ADMIN LOGIN
+        </a>
+      </div>
     </div>
   );
 }

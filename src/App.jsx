@@ -45,28 +45,48 @@ function RequireAdmin({ children }) {
   return children;
 }
 
+function RegistrationClosed() {
+  return (
+    <div style={{ maxWidth: 480, margin: '0 auto', padding: '6rem 1.5rem', textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: 'var(--color-buzz-navy)', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>
+        REGISTRATION CLOSED
+      </div>
+      <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: '#7A6E5A', marginBottom: '2rem' }}>
+        We're not accepting new accounts right now. Check back when the site launches.
+      </p>
+      <a href="/" className="btn-retro" style={{ display: 'inline-flex' }}>Back to Home</a>
+    </div>
+  );
+}
+
 function AppRoutes() {
-  if (UNDER_CONSTRUCTION) {
+  const { user, isAdmin, loading } = useAuth();
+
+  if (UNDER_CONSTRUCTION && !loading && !isAdmin) {
     return (
       <Routes>
-        <Route path="/admin/*" element={
-          <div style={{minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)'}}>
-            <Nav /><main style={{flex: 1}}><Routes>
-              <Route path="/" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
-              <Route path="/articles" element={<RequireAdmin><AdminArticles /></RequireAdmin>} />
-              <Route path="/ai-write" element={<RequireAdmin><AdminAIWriter /></RequireAdmin>} />
-              <Route path="/scheduled" element={<RequireAdmin><AdminScheduled /></RequireAdmin>} />
-              <Route path="/settings" element={<RequireAuth><AdminSettings /></RequireAuth>} />
-              <Route path="/new" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
-              <Route path="/edit/:slug" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
-            </Routes></main><Footer />
+        <Route path="/login" element={
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)' }}>
+            <main style={{ flex: 1 }}><Login /></main>
           </div>
         } />
-        <Route path="/login" element={<div style={{minHeight:'100vh',display:'flex',flexDirection:'column'}}><Nav /><main style={{flex:1}}><Login /></main><Footer /></div>} />
+        <Route path="/forgot-password" element={
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)' }}>
+            <main style={{ flex: 1 }}><ForgotPassword /></main>
+          </div>
+        } />
+        <Route path="/reset-password" element={
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)' }}>
+            <main style={{ flex: 1 }}><ResetPassword /></main>
+          </div>
+        } />
         <Route path="*" element={<UnderConstruction />} />
       </Routes>
     );
   }
+
+  // While auth is loading, render nothing to avoid flash
+  if (UNDER_CONSTRUCTION && loading) return null;
 
   return (
     <div style={{minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-buzz-cream)'}}>
@@ -86,7 +106,7 @@ function AppRoutes() {
           <Route path="/work-with-us" element={<WorkWithUs />} />
           <Route path="/review-policy" element={<ReviewPolicy />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={UNDER_CONSTRUCTION ? <RegistrationClosed /> : <Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
