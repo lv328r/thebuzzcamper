@@ -191,7 +191,7 @@ export default function AdminAIWriter() {
     } finally {
       setGenerating(false);
     }
-  }, [apiKey, model, postType, topic, referenceUrls, imageUrls, extraContext]);
+  }, [model, postType, topic, referenceUrls, imageUrls, extraContext]);
 
   async function handlePublishNow() {
     if (!generated) return;
@@ -432,7 +432,7 @@ export default function AdminAIWriter() {
           {/* Generate button */}
           <button
             onClick={generate}
-            disabled={generating || !apiKey || !topic}
+            disabled={generating || !topic}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem',
               width: '100%', padding: '1rem',
@@ -443,7 +443,7 @@ export default function AdminAIWriter() {
               color: 'var(--color-buzz-orange)',
               border: '2.5px solid var(--color-buzz-navy)',
               boxShadow: generating ? 'none' : '5px 5px 0 var(--color-buzz-orange)',
-              cursor: generating || !apiKey || !topic ? 'not-allowed' : 'pointer',
+              cursor: generating || !topic ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s',
               transform: generating ? 'translate(3px,3px)' : '',
             }}>
