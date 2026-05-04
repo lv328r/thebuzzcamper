@@ -4,10 +4,17 @@ import AdminLayout, { AdminPageHeader } from '../../components/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 import { saveArticle } from '../../utils/storage';
 import {
-  Sparkles, Plus, Trash2,
+  Sparkles, Eye, EyeOff, Plus, Trash2,
   FileEdit, Rocket, AlertCircle, CheckCircle, Clock,
 } from 'lucide-react';
 
+
+// Key lives in Vercel env (VITE_ANTHROPIC_KEY) — not in git/source code.
+// VITE_ prefix means it's bundled client-side, which is acceptable for a
+// personal admin-only tool. The server-proxy approach timed out at Vercel's
+// 25s Edge Function limit; Claude article generation takes 30-60s.
+const VERCEL_KEY = import.meta.env.VITE_ANTHROPIC_KEY || '';
+const LOCAL_STORAGE_KEY = 'buzz_anthropic_key';
 
 const MODELS = [
   { id: 'claude-3-5-haiku-20241022', label: 'Claude Haiku 3.5', sub: 'Fast & cheap — good for drafts' },
@@ -132,6 +139,9 @@ export default function AdminAIWriter() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Prefer Vercel env key, fall back to localStorage
+  const [apiKey, setApiKey] = useState(() => VERCEL_KEY || localStorage.getItem(LOCAL_STORAGE_KEY) || '');
+  const [showKey, setShowKey] = useState(false);
   const [model, setModel] = useState(MODELS[1].id);
 
   const [postType, setPostType] = useState('upgrade');
@@ -149,6 +159,7 @@ export default function AdminAIWriter() {
   const [publishDone, setPublishDone] = useState(false);
 
   const generate = useCallback(async () => {
+    if (!apiKey.trim()) { setError('Enter your Anthropic API key first.'); return; }
     if (!topic.trim()) { setError('Describe what you want to write about.'); return; }
 
     setError('');
@@ -159,10 +170,15 @@ export default function AdminAIWriter() {
     const userPrompt = buildUserPrompt({ postType, topic, referenceUrls, imageUrls, extraContext });
 
     try {
-      setProgress('Generating article — this takes 15-30 seconds...');
-      const res = await fetch('/api/generate-article', {
+      setProgress('Generating article — this takes 15–60 seconds depending on model...');
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'x-api-key': apiKey.trim(),
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser': 'true',
+        },
         body: JSON.stringify({
           model,
           max_tokens: 8192,
@@ -191,7 +207,7 @@ export default function AdminAIWriter() {
     } finally {
       setGenerating(false);
     }
-  }, [model, postType, topic, referenceUrls, imageUrls, extraContext]);
+  }, [apiKey, model, postType, topic, referenceUrls, imageUrls, extraContext]);
 
   async function handlePublishNow() {
     if (!generated) return;
@@ -241,25 +257,55 @@ export default function AdminAIWriter() {
         {/* LEFT — Brief form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-          {/* API Key — server-side only */}
+          {/* API Key */}
           <Panel title="Anthropic API Key" color="var(--color-buzz-navy)">
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
-              <CheckCircle size={18} color="#16A34A" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.06em', color: '#16A34A', marginBottom: '0.3rem' }}>
-                  KEY STORED SERVER-SIDE
-                </p>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#7A6E5A', lineHeight: 1.6 }}>
-                  Your Anthropic key is stored as a server-only environment variable in Vercel — it never appears in the browser or JavaScript bundle. To update it, go to your{' '}
-                  <a href="https://vercel.com" target="_blank" rel="noopener noreferrer"
-                    style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>
-                    Vercel project settings
-                  </a>
-                  {' '}→ Environment Variables →{' '}
-                  <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.35rem' }}>ANTHROPIC_KEY</code>.
-                </p>
+            {VERCEL_KEY ? (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
+                <CheckCircle size={18} color="#16A34A" style={{ flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.06em', color: '#16A34A', marginBottom: '0.25rem' }}>
+                    CONFIGURED IN VERCEL
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#7A6E5A', lineHeight: 1.5 }}>
+                    Key is loaded from <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.3rem' }}>VITE_ANTHROPIC_KEY</code> in your Vercel environment variables. Update it in{' '}
+                    <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>Vercel project settings</a>.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: '#7A6E5A', marginBottom: '0.625rem' }}>
+                  Get your key at{' '}
+                  <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>
+                    console.anthropic.com
+                  </a>. Or set <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.3rem' }}>VITE_ANTHROPIC_KEY</code> in Vercel to pre-fill it automatically.
+                </p>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value);
+                      if (e.target.value) localStorage.setItem(LOCAL_STORAGE_KEY, e.target.value);
+                      else localStorage.removeItem(LOCAL_STORAGE_KEY);
+                    }}
+                    className="field-input"
+                    placeholder="sk-ant-..."
+                    style={{ paddingRight: '2.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}
+                  />
+                  <button type="button" onClick={() => setShowKey(!showKey)}
+                    style={{ position: 'absolute', right: '0.625rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9C8E74' }}>
+                    {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {apiKey && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.4rem' }}>
+                    <CheckCircle size={12} color="#16A34A" />
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#16A34A', letterSpacing: '0.06em' }}>KEY SAVED IN BROWSER</span>
+                  </div>
+                )}
+              </div>
+            )}
           </Panel>
 
           {/* Article Brief */}
@@ -432,7 +478,7 @@ export default function AdminAIWriter() {
           {/* Generate button */}
           <button
             onClick={generate}
-            disabled={generating || !topic}
+            disabled={generating || !apiKey || !topic}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem',
               width: '100%', padding: '1rem',
@@ -443,7 +489,7 @@ export default function AdminAIWriter() {
               color: 'var(--color-buzz-orange)',
               border: '2.5px solid var(--color-buzz-navy)',
               boxShadow: generating ? 'none' : '5px 5px 0 var(--color-buzz-orange)',
-              cursor: generating || !topic ? 'not-allowed' : 'pointer',
+              cursor: generating || !apiKey || !topic ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s',
               transform: generating ? 'translate(3px,3px)' : '',
             }}>
