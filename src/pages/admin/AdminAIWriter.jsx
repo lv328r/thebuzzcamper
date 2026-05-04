@@ -4,12 +4,10 @@ import AdminLayout, { AdminPageHeader } from '../../components/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 import { saveArticle } from '../../utils/storage';
 import {
-  Sparkles, Key, EyeOff, Eye, Plus, Trash2,
-  Send, FileEdit, Rocket, AlertCircle, CheckCircle, Clock,
+  Sparkles, Plus, Trash2,
+  FileEdit, Rocket, AlertCircle, CheckCircle, Clock,
 } from 'lucide-react';
 
-const LOCAL_KEY = 'buzz_anthropic_key';
-const ENV_KEY = import.meta.env.VITE_ANTHROPIC_KEY || '';
 
 const MODELS = [
   { id: 'claude-3-5-haiku-20241022', label: 'Claude Haiku 3.5', sub: 'Fast & cheap — good for drafts' },
@@ -134,9 +132,6 @@ export default function AdminAIWriter() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const keySource = ENV_KEY ? 'vercel' : 'local';
-  const [apiKey, setApiKey] = useState(() => ENV_KEY || localStorage.getItem(LOCAL_KEY) || '');
-  const [showKey, setShowKey] = useState(false);
   const [model, setModel] = useState(MODELS[1].id);
 
   const [postType, setPostType] = useState('upgrade');
@@ -153,14 +148,7 @@ export default function AdminAIWriter() {
   const [publishing, setPublishing] = useState(false);
   const [publishDone, setPublishDone] = useState(false);
 
-  function saveKey(val) {
-    setApiKey(val);
-    if (val) localStorage.setItem(LOCAL_KEY, val);
-    else localStorage.removeItem(LOCAL_KEY);
-  }
-
   const generate = useCallback(async () => {
-    if (!apiKey.trim()) { setError('Enter your Anthropic API key first.'); return; }
     if (!topic.trim()) { setError('Describe what you want to write about.'); return; }
 
     setError('');
@@ -172,14 +160,9 @@ export default function AdminAIWriter() {
 
     try {
       setProgress('Generating article — this takes 15-30 seconds...');
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/generate-article', {
         method: 'POST',
-        headers: {
-          'x-api-key': apiKey.trim(),
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-dangerous-direct-browser': 'true',
-        },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           model,
           max_tokens: 8192,
@@ -258,53 +241,25 @@ export default function AdminAIWriter() {
         {/* LEFT — Brief form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-          {/* API Key */}
+          {/* API Key — server-side only */}
           <Panel title="Anthropic API Key" color="var(--color-buzz-navy)">
-            {keySource === 'vercel' ? (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
-                <CheckCircle size={18} color="#16A34A" style={{ flexShrink: 0, marginTop: 2 }} />
-                <div>
-                  <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.06em', color: '#16A34A', marginBottom: '0.25rem' }}>
-                    CONFIGURED VIA VERCEL
-                  </p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#7A6E5A', lineHeight: 1.5 }}>
-                    Key is loaded from your Vercel environment variable <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.3rem' }}>VITE_ANTHROPIC_KEY</code>. You can update it in your{' '}
-                    <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>Vercel project settings</a>.
-                  </p>
-                </div>
-              </div>
-            ) : (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
+              <CheckCircle size={18} color="#16A34A" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: '#7A6E5A', marginBottom: '0.625rem' }}>
-                  Get your key at{' '}
-                  <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer"
-                    style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>
-                    console.anthropic.com
-                  </a>
-                  . Stored locally in your browser. To make it permanent, add <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.3rem' }}>VITE_ANTHROPIC_KEY</code> to your Vercel environment variables.
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', letterSpacing: '0.06em', color: '#16A34A', marginBottom: '0.3rem' }}>
+                  KEY STORED SERVER-SIDE
                 </p>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showKey ? 'text' : 'password'}
-                    value={apiKey}
-                    onChange={(e) => saveKey(e.target.value)}
-                    className="field-input"
-                    placeholder="sk-ant-..."
-                    style={{ paddingRight: '2.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}
-                  />
-                  <button type="button" onClick={() => setShowKey(!showKey)}
-                    style={{ position: 'absolute', right: '0.625rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9C8E74' }}>
-                    {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                {apiKey && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.4rem' }}>
-                    <CheckCircle size={12} color="#16A34A" />
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#16A34A', letterSpacing: '0.06em' }}>KEY SAVED IN BROWSER</span>
-                  </div>
-                )}
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#7A6E5A', lineHeight: 1.6 }}>
+                  Your Anthropic key is stored as a server-only environment variable in Vercel — it never appears in the browser or JavaScript bundle. To update it, go to your{' '}
+                  <a href="https://vercel.com" target="_blank" rel="noopener noreferrer"
+                    style={{ color: 'var(--color-buzz-teal)', textDecoration: 'underline' }}>
+                    Vercel project settings
+                  </a>
+                  {' '}→ Environment Variables →{' '}
+                  <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', background: '#F0EAD6', padding: '0.1rem 0.35rem' }}>ANTHROPIC_KEY</code>.
+                </p>
               </div>
-            )}
+            </div>
           </Panel>
 
           {/* Article Brief */}
